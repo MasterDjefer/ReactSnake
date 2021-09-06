@@ -1,5 +1,6 @@
 import './App.css';
 import React from 'react';
+import { Menu, GameState } from './Menu';
 
 const Direction = 
 { 
@@ -16,34 +17,85 @@ class App extends React.Component
     super();
 
     this.canvasRef = React.createRef();
+    this.intervalInstance = null;
 
     this.state =
     {
       body: [ { x: 0, y: 0 } ],
       direction: Direction.right,
       food: { x: 60, y: 60 },
-      blockSize: 20
+      blockSize: 20,
+      gameState: GameState.newGame
     };
   }
 
   componentDidUpdate(prevProps, prevState, snapshot)
   {
-    const { body, blockSize, food } = this.state;
-    const ctx = this.canvasRef.current.getContext("2d");
-    prevState.body.forEach(element => ctx.clearRect(element.x, element.y, blockSize, blockSize));
-    body.forEach(element => ctx.fillRect(element.x, element.y, blockSize, blockSize));
+    if (this.state.gameState === GameState.running)
+    {
+      const { body, blockSize, food } = this.state;
+      const ctx = this.canvasRef.current.getContext("2d");
+      prevState.body.forEach(element => ctx.clearRect(element.x, element.y, blockSize, blockSize));
+      body.forEach(element => ctx.fillRect(element.x, element.y, blockSize, blockSize));
 
-    ctx.clearRect(prevState.food.x, prevState.food.y, blockSize, blockSize);
-    ctx.fillRect(food.x, food.y, blockSize, blockSize);
+      ctx.clearRect(prevState.food.x, prevState.food.y, blockSize, blockSize);
+      ctx.fillRect(food.x, food.y, blockSize, blockSize);
+    }
+    else
+    if (this.state.gameState === GameState.pause)
+    {
+      clearInterval(this.intervalInstance);
+    }
   }
 
   componentDidMount()
   {
-    console.log(this.canvasRef.current.width, this.canvasRef.current.height);
     document.addEventListener("keydown", this.onKeyPressed, false);
+  }
 
+  onKeyPressed = (event) =>
+  {
+    if (this.state.gameState === GameState.running)
+    {
+      let { body, direction, gameState } = this.state; 
+      body = JSON.parse(JSON.stringify(body));
+      
+      switch (event.keyCode)
+      {
+        case 65://A, left
+          if (this.state.direction !== Direction.right)
+            direction = Direction.left
+          break;
+        case 68://D, right
+          if (this.state.direction !== Direction.left)
+            direction = Direction.right
+          break;
+        case 87://W, up
+          if (this.state.direction !== Direction.down)
+            direction = Direction.up
+          break;
+        case 83://S, down
+          if (this.state.direction !== Direction.up)
+            direction = Direction.down
+          break;
+        case 32:        
+          body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });
+          break;
+        case 27:        
+          gameState = GameState.pause;
+          break;
+        default:
+          break;
+      }
+        
+      this.setState({ body, direction, gameState });
+    }
+  }
+
+  startGame = () =>
+  {
     let self = this;
-    setInterval(() =>
+    this.intervalInstance = setInterval(() =>
     {
       let { body, blockSize, food } = this.state;
       body = JSON.parse(JSON.stringify(body));
@@ -75,14 +127,10 @@ class App extends React.Component
 
       if (food.x === head.x && food.y === head.y)
       {
-        body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });
-        
-        if (this.canvasRef.current)
-        {
-          food.x = Math.floor((Math.random() * this.canvasRef.current.width) / blockSize) * blockSize;
-          food.y = Math.floor((Math.random() * this.canvasRef.current.height) / blockSize) * blockSize;
-          console.log(food)
-        }
+        body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });        
+       
+        food.x = Math.floor((Math.random() * this.canvasRef.current.width) / blockSize) * blockSize;
+        food.y = Math.floor((Math.random() * this.canvasRef.current.height) / blockSize) * blockSize;        
       }
       
       if (this.canvasRef.current)
@@ -102,45 +150,37 @@ class App extends React.Component
 
       self.setState({ body, food });
     }, 100);
+
+    this.setState({ gameState: GameState.running });
   }
 
-  onKeyPressed = (event) =>
+  clearGame = () =>
   {
-    let { body, direction } = this.state; 
-    body = JSON.parse(JSON.stringify(body));
-    
-    switch (event.keyCode)
+    this.setState(
     {
-      case 65://A, left
-        if (this.state.direction !== Direction.right)
-          direction = Direction.left
-        break;
-      case 68://D, right
-        if (this.state.direction !== Direction.left)
-          direction = Direction.right
-        break;
-      case 87://W, up
-        if (this.state.direction !== Direction.down)
-          direction = Direction.up
-        break;
-      case 83://S, down
-        if (this.state.direction !== Direction.up)
-          direction = Direction.down
-        break;
-      case 32:        
-        body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });
-        break;
-      default:
-        break;
-    }
-      
-    this.setState({ body, direction });
+      body: [ { x: 0, y: 0 } ],
+      direction: Direction.right,
+      food: { x: 60, y: 60 },
+      blockSize: 20
+    });
+  }
+
+  onNewGameButtonClicked = () =>
+  {
+    this.clearGame();
+    this.startGame();
+  }
+
+  onContinueButtonClicked = () =>
+  {
+    this.startGame();
   }
 
   render()
   {
     return (
       <div className="app">
+        <Menu gameState={this.state.gameState} newGameHandler={this.onNewGameButtonClicked} continueGameHandler={this.onContinueButtonClicked}/>
         <canvas width="500" height="500" ref={this.canvasRef}/>
       </div>
     );

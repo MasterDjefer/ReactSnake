@@ -4,4 +4,39 @@
   height: 500px;
   border: 2px black;
   background-color: red;
+  position: relative;
+  margin: auto;  
+}
+
+ul
+{
+  width: 100%;
+  list-style-type: none;
+  padding: 0;
+  top: 50%;
+  margin: 0;
+  transform: translateY(-50%);
+  position: absolute;
+}
+
+ul li button
+{
+  border-radius: 10px;
+  width: 60%;
+  height: 50px;
+  display: block;
+  margin: 0 auto 20px auto;
+  cursor: pointer;
+}
+
+.disabled
+{
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.unvisible
+{
+  visibility: hidden;
 }

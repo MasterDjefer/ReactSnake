@@ -21,16 +21,20 @@ class App extends React.Component
     {
       body: [ { x: 0, y: 0 } ],
       direction: Direction.right,
-      blockSize: 20      
+      food: { x: 60, y: 60 },
+      blockSize: 20
     };
   }
 
   componentDidUpdate(prevProps, prevState, snapshot)
   {
-    const { body, blockSize } = this.state;
+    const { body, blockSize, food } = this.state;
     const ctx = this.canvasRef.current.getContext("2d");
     prevState.body.forEach(element => ctx.clearRect(element.x, element.y, blockSize, blockSize));
     body.forEach(element => ctx.fillRect(element.x, element.y, blockSize, blockSize));
+
+    ctx.clearRect(prevState.food.x, prevState.food.y, blockSize, blockSize);
+    ctx.fillRect(food.x, food.y, blockSize, blockSize);
   }
 
   componentDidMount()
@@ -41,14 +45,14 @@ class App extends React.Component
     let self = this;
     setInterval(() =>
     {
-      let { body, blockSize } = this.state;
-      const cBody = JSON.parse(JSON.stringify(body));
+      let { body, blockSize, food } = this.state;
+      body = JSON.parse(JSON.stringify(body));
 
-      const head = cBody[0];
-      for (let i = cBody.length - 1; i > 0; --i)
+      const head = body[0];
+      for (let i = body.length - 1; i > 0; --i)
       {
-        cBody[i].x = cBody[i - 1].x;
-        cBody[i].y = cBody[i - 1].y;
+        body[i].x = body[i - 1].x;
+        body[i].y = body[i - 1].y;
       }
 
       switch (this.state.direction)
@@ -68,6 +72,18 @@ class App extends React.Component
         default:
           break;
       }
+
+      if (food.x === head.x && food.y === head.y)
+      {
+        body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });
+        
+        if (this.canvasRef.current)
+        {
+          food.x = Math.floor((Math.random() * this.canvasRef.current.width) / blockSize) * blockSize;
+          food.y = Math.floor((Math.random() * this.canvasRef.current.height) / blockSize) * blockSize;
+          console.log(food)
+        }
+      }
       
       if (this.canvasRef.current)
       {
@@ -84,7 +100,7 @@ class App extends React.Component
           head.y = this.canvasRef.current.height - blockSize;
       }
 
-      self.setState({ body: cBody });
+      self.setState({ body, food });
     }, 100);
   }
 

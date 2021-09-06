@@ -27,8 +27,6 @@ class App extends React.Component
 
   componentDidUpdate(prevProps, prevState, snapshot)
   {
-    console.log(this.state.body.length);
-
     const { body, blockSize } = this.state;
     const ctx = this.canvasRef.current.getContext("2d");
     prevState.body.forEach(element => ctx.clearRect(element.x, element.y, blockSize, blockSize));
@@ -37,6 +35,7 @@ class App extends React.Component
 
   componentDidMount()
   {
+    console.log(this.canvasRef.current.width, this.canvasRef.current.height);
     document.addEventListener("keydown", this.onKeyPressed, false);
 
     let self = this;
@@ -70,6 +69,21 @@ class App extends React.Component
           break;
       }
       
+      if (this.canvasRef.current)
+      {
+        if (head.x >= this.canvasRef.current.width)
+          head.x = 0;
+        else
+        if (head.x < 0)
+          head.x = this.canvasRef.current.width - blockSize;
+        else
+        if (head.y >= this.canvasRef.current.height)
+          head.y = 0;
+        else
+        if (head.y < 0)
+          head.y = this.canvasRef.current.height - blockSize;
+      }
+
       self.setState({ body: cBody });
     }, 100);
   }

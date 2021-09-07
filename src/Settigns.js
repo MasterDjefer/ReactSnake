@@ -1,18 +1,12 @@
 import React from "react";
+import { GameState, SnakeSpeed } from "./GameSettings";
 
-export const SnakeSpeed =
-{
-    slow: 300,
-    medium: 150,
-    fast: 50
-};
-
-export class Settings extends React.Component
+export default class Settings extends React.Component
 {
     render()
     {
         return (
-            <div>
+            <div className={ (this.props.gameState === GameState.settings ? "" : "unvisible") }>
                 <ul className="settings-list">
                     <li>
                         <div>
@@ -35,7 +29,7 @@ export class Settings extends React.Component
                         </div>
                     </li>
                     
-                    <li className="cursor-pointer button"><p>Back</p></li>
+                    <li onClick={ this.props.onButtonBackClicked } className="cursor-pointer button"><p>Back</p></li>
                 </ul>
             </div>
         );

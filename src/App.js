@@ -73,13 +73,6 @@ class App extends React.Component
           if (this.state.direction !== Direction.up)
             direction = Direction.down
           break;
-        case 32://space, spawn food        
-          body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });
-          break;
-        case 27://escape, pause game and go to menu
-          if (gameState === GameState.running)      
-            gameState = GameState.pause;
-          break;
         default:
           break;
       }
@@ -202,7 +195,7 @@ class App extends React.Component
   render()
   {
     return (
-      <div className="app">
+      <div className="app">        
         <Menu gameState={this.state.gameState} onNewGameButtonClicked={this.onNewGameButtonClicked} 
               onContinueButtonClicked={this.onContinueButtonClicked}
               onButtonSettingsClicked={this.onButtonSettingsClicked}/>
@@ -210,6 +203,7 @@ class App extends React.Component
                   snakeSpeed={this.state.snakeSpeed} onSpeedChanged={this.onSpeedChanged} 
                   isWallEnabled={this.state.isWallEnabled} onWallChanged={this.onWallChanged}
                   onButtonBackClicked={this.onButtonBackClicked}/>
+        <button onClick={this.onButtonBackClicked} className={ "go-menu-button " + (this.state.gameState === GameState.running ? "" : "unvisible")}>Menu</button>
         <canvas width="500" height="500" ref={this.canvasRef}/>
       </div>
     );

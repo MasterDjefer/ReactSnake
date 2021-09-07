@@ -1,6 +1,7 @@
 import './App.css';
 import React from 'react';
 import { Menu, GameState } from './Menu';
+import { SnakeSpeed, Settings } from './Settigns';
 
 const Direction = 
 { 
@@ -19,14 +20,7 @@ class App extends React.Component
     this.canvasRef = React.createRef();
     this.intervalInstance = null;
 
-    this.state =
-    {
-      body: [ { x: 0, y: 0 } ],
-      direction: Direction.right,
-      food: { x: 60, y: 60 },
-      blockSize: 20,
-      gameState: GameState.newGame
-    };
+    this.state = this.getEmptyState();
   }
 
   componentDidUpdate(prevProps, prevState, snapshot)
@@ -78,11 +72,12 @@ class App extends React.Component
           if (this.state.direction !== Direction.up)
             direction = Direction.down
           break;
-        case 32:        
+        case 32://space, spawn food        
           body.push({ x: body[body.length - 1].x, y: body[body.length - 1].y });
           break;
-        case 27:        
-          gameState = GameState.pause;
+        case 27://escape, pause game and go to menu
+          if (gameState === GameState.running)      
+            gameState = GameState.pause;
           break;
         default:
           break;
@@ -149,20 +144,27 @@ class App extends React.Component
       }
 
       self.setState({ body, food });
-    }, 100);
+    }, self.state.snakeSpeed);
 
     this.setState({ gameState: GameState.running });
   }
 
   clearGame = () =>
   {
-    this.setState(
-    {
+    this.setState(this.getEmptyState());
+  }
+
+  getEmptyState = () =>
+  {
+    return {
       body: [ { x: 0, y: 0 } ],
       direction: Direction.right,
       food: { x: 60, y: 60 },
-      blockSize: 20
-    });
+      blockSize: 20,
+      gameState: GameState.newGame,
+      snakeSpeed: SnakeSpeed.slow,
+      isWallEnabled: false
+    };
   }
 
   onNewGameButtonClicked = () =>
@@ -176,15 +178,27 @@ class App extends React.Component
     this.startGame();
   }
 
+  onSpeedChanged = (snakeSpeed) =>
+  {
+    this.setState({ snakeSpeed });
+  }
+
+  onWallChanged = (isWallEnabled) =>
+  {
+    this.setState({ isWallEnabled });
+  }
+
   render()
   {
     return (
       <div className="app">
-        <Menu gameState={this.state.gameState} newGameHandler={this.onNewGameButtonClicked} continueGameHandler={this.onContinueButtonClicked}/>
+        <Settings snakeSpeed={this.state.snakeSpeed} onSpeedChanged={this.onSpeedChanged} isWallEnabled={this.state.isWallEnabled} onWallChanged={this.onWallChanged}/>
         <canvas width="500" height="500" ref={this.canvasRef}/>
       </div>
     );
   }
 }
+
+//<Menu gameState={this.state.gameState} newGameHandler={this.onNewGameButtonClicked} continueGameHandler={this.onContinueButtonClicked}/>
 
 export default App;
